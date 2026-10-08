@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar Budget</title>
+<meta name="description" content="Blender add-on: check a VRChat avatar against the PC and Quest performance ranks and make an optimised Quest or PC version in one click, with every expression intact.">
+<meta property="og:title" content="Avatar Budget">
+<meta property="og:description" content="One click from Very Poor to Quest Good, inside Blender.">
+<meta property="og:image" content="media/cover.png">
+<link rel="icon" href="media/logo.png">
+<style>
+  :root {
+    --bg: #14151b; --panel: #20222b; --ink: #f0f1f5; --muted: #969aa8;
+    --accent: #6ea8ff; --good: #56cc84; --bad: #eb5757;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.6 "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 56px 0 28px; display: flex; gap: 20px; align-items: center; }
+  header img { width: 72px; height: 72px; border-radius: 16px; }
+  h1 { font-size: 44px; line-height: 1.1; margin: 0; }
+  .tag { color: var(--muted); margin: 6px 0 0; font-size: 19px; }
+  video { width: 100%; border-radius: 14px; background: #000; display: block; }
+  h2 { font-size: 28px; margin: 56px 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .card { background: var(--panel); border-radius: 14px; padding: 20px 22px; }
+  .card h3 { margin: 0 0 6px; color: var(--accent); font-size: 18px; letter-spacing: .04em; text-transform: uppercase; }
+  .card p { margin: 0; color: var(--muted); }
+  figure { margin: 22px 0 0; }
+  figure img { width: 100%; border-radius: 14px; display: block; }
+  figcaption { color: var(--muted); font-size: 15px; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #2c2f3a; }
+  th { color: var(--muted); font-weight: 600; font-size: 15px; }
+  .bad { color: var(--bad); } .good { color: var(--good); }
+  ul { padding-left: 20px; } li { margin: 6px 0; }
+  .cta { display: inline-block; margin-top: 18px; background: var(--good); color: var(--bg);
+         font-weight: 700; padding: 12px 22px; border-radius: 999px; text-decoration: none; }
+  footer { color: var(--muted); font-size: 14px; padding: 56px 0 40px; }
+  footer a { color: var(--muted); }
+  @media (max-width: 760px) {
+    h1 { font-size: 34px; }
+    .grid { grid-template-columns: 1fr; }
+    th:nth-child(4), td:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="media/logo.png" alt="">
+    <div>
+      <h1>Avatar Budget</h1>
+      <p class="tag">A Blender add-on that checks a VRChat avatar against the PC and Quest performance ranks, then makes an optimised Quest or PC version in one click, with every expression intact.</p>
+    </div>
+  </header>
+
+  <video controls playsinline preload="metadata" poster="media/poster.jpg">
+    <source src="media/demo.mp4" type="video/mp4">
+  </video>
+
+  <div class="grid">
+    <div class="card"><h3>Check</h3><p>Rank on PC and Quest, counted the way VRChat counts it: triangles, texture memory, skinned and basic meshes, material slots, bones and size. Limits come from VRChat's published tables.</p></div>
+    <div class="card"><h3>Fix</h3><p>Pick a target rank and press Make. An optimised copy appears; the original is never touched. Meshes joined, triangles cut, materials atlased, bones merged.</p></div>
+    <div class="card"><h3>Export</h3><p>One button writes an FBX with the settings Unity and the VRChat SDK expect, with textures saved beside it.</p></div>
+  </div>
+
+  <h2>Tested results</h2>
+  <p class="tag">Free VRM sample avatars from the VRM Consortium, on Blender 4.2 LTS and 5.2.</p>
+  <table>
+    <tr><th>Avatar</th><th>Before</th><th>After</th><th>Detail</th></tr>
+    <tr><td>Seed-san</td><td class="bad">Very Poor</td><td class="good">Quest Good</td><td>45,058 to 9,822 triangles, 21 to 1 materials, 128 to 90 bones, all 43 expressions kept, about 20 seconds</td></tr>
+    <tr><td>VRM1 Twist Sample</td><td class="bad">Very Poor</td><td class="good">Quest Excellent</td><td>36,470 to 7,381 triangles, all 57 expressions kept, about 10 seconds</td></tr>
+    <tr><td>Seed-san</td><td class="bad">PC Poor</td><td class="good">PC Good</td><td>21 materials to 1 atlas, about 1 second</td></tr>
+  </table>
+
+  <figure><img src="media/expressions.png" alt="Original and Quest version side by side in four expressions"><figcaption>Expressions after reduction: original left, Quest version right.</figcaption></figure>
+
+  <h2>How it works</h2>
+  <ul>
+    <li><strong>Its own simplifier.</strong> Blender's Decimate cannot run on meshes with shape keys and smears textures across UV seams at Quest-level reductions. Avatar Budget collapses vertices only onto existing neighbours, so every surviving vertex keeps its exact UVs, bone weights and shape key offsets.</li>
+    <li><strong>Seams and outlines hold.</strong> Seam twins move together, borders only slide along themselves, and no collapse may flip a triangle.</li>
+    <li><strong>Judged in every pose.</strong> Each shape key adds its own error planes, so a closed eyelid still covers the eye after reduction.</li>
+    <li><strong>Texture-aware.</strong> Every collapse is limited by how far it would shift the texture, in pixels; small details such as logos, eyes and eyelid rims are locked.</li>
+    <li><strong>Quest-aware.</strong> Transparent overlays are removed and see-through pixels are filled with the surface behind them, because Quest's avatar shaders draw everything solid.</li>
+  </ul>
+
+  <figure><img src="media/panel.png" alt="The Avatar Budget panel in Blender after making a Quest version"></figure>
+  <figure><img src="media/excellent.png" alt="Quest Excellent result on a second avatar"></figure>
+
+  <a class="cta" href="https://avatarbudget.gumroad.com/l/avatar-budget">Get Avatar Budget</a>
+
+  <footer>
+    Blender 4.2 or newer. GPL-3.0, like all Blender add-ons. Not affiliated with or endorsed by VRChat Inc.<br>
+    Sample avatars: Seed-san by VirtualCast, Inc. and VRM1 Constraint Twist Sample, both under the VRM Public License 1.0
+    (<a href="https://github.com/vrm-c/vrm-specification/tree/master/samples">source</a>).
+  </footer>
+</div>
+</body>
+</html>
